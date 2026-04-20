@@ -1,0 +1,10 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/Search",
+    "pages/Publish",
+    "pages/Chat",
+    "pages/Myself",
+    "pages/LoginPage"
+  ]
+}
