@@ -4,20 +4,54 @@ import { router } from '@kit.ArkUI';
 @Entry
 @Component
 struct LoginPage {
+  @State account: string = '';
   build() {
     Column() {
       Image($r('app.media.startIcon'))
         .width(78)
         .height(78)
-      Button('登录')
-        .onClick(() => {
-          // 假设这里是你调用接口，接口返回登录成功了：
-          // 1. 把全局的登录状态改成 true（和Publish.ets里的变量对应起来）
-          AppStorage.setOrCreate('isLogin', true);
+        .margin({ top:150,bottom: 20 })
+      Text('登录页面'){
+        Span('输入手机号进行登录操作')
+          .decoration({ type: TextDecorationType.Underline })
+          .margin({ top: 70, bottom: 20 })
+      }
+      TextInput({placeholder:'手机号'})
+        .maxLength(11)
+        .type(InputType.Number)
+        .onChange((value: string) => {
+          this.account =value;
+          })
+      TextInput({placeholder:"密码"})
+        .maxLength(8)
+        .type(InputType.Password)
+        .onChange((value: string) => {
+          this.account =value;
+        })
+      Row({ space: 20 })
+      {
+        Text('短信验证码登录')
+          .decoration({ type: TextDecorationType.Underline })
+        Text('忘记密码')
+          .decoration({ type: TextDecorationType.Underline })
+      }
+      .width('100%') // <--- 加上这一行，撑满宽度
+      .justifyContent(FlexAlign.SpaceBetween)
+      .margin({ top: 20, bottom: 20 }) // 顺便加个上下边距更好看一点
 
-          // 2. 返回上一页（也就是自动退回 Publish.ets 页面）
+      Button('登录',{type:ButtonType.Capsule})
+        .fontSize(16)
+        .fontColor(Color.White)
+        .backgroundColor('#007DDF')
+        .margin({top:48,bottom:12})
+        .onClick(() => {
+          AppStorage.setOrCreate('isLogin', true);
           router.back();
         })
+      Text('注册账号')
+        .fontColor('#007DFF')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
     }
   }
 }
