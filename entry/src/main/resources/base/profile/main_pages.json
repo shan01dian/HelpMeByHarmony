@@ -6,6 +6,7 @@
     "pages/Chat",
     "pages/Myself",
     "pages/LoginPage",
-    "pages/RegisterPage"
+    "pages/RegisterPage",
+    "pages/EventDetail"
   ]
 }
