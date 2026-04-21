@@ -1,6 +1,5 @@
 import router from '@ohos.router';
 
-
 @Entry
 @Component
 struct Index {
@@ -43,24 +42,64 @@ struct Index {
     }
   }
 
+  // 跳转到搜索页面
+  private navigateToSearch(): void {
+    router.pushUrl({
+      url: 'pages/Search'
+    });
+  }
+
   build() {
     Column() {
-      // 主内容区域 - 显示当前页面名称
+      // 顶部搜索框区域
+      Row() {
+        // 模仿咸鱼的假搜索框
+        Row() {
+          SymbolGlyph($r('sys.symbol.magnifyingglass'))
+            .fontSize(20)
+            .fontColor([Color.Gray])
+            .margin({ right: 8 })
+          
+          Text('搜索你想要的帮助')
+            .fontSize(16)
+            .fontColor('#999999')
+            .textAlign(TextAlign.Start)
+        }
+        .width('90%')
+        .height(40)
+        .backgroundColor('#FFFFFF')
+        .borderRadius(20)
+        .padding({ left: 16, right: 16 })
+        .justifyContent(FlexAlign.Start)
+        .alignItems(VerticalAlign.Center)
+        .onClick(() => {
+          this.navigateToSearch();
+        })
+      }
+      .width('100%')
+      .padding({ top: 12, left: 16, right: 16, bottom: 12 })
+      .backgroundColor('#F5F5F5')
+
+      // 主内容区域
       Column() {
-        Text('主页')
+        Text('热门帮助')
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
           .fontColor('#333333')
+          .margin({ bottom: 16 })
         
-        Text('欢迎使用HelpMe应用')
-          .fontSize(16)
-          .fontColor('#666666')
-          .margin({ top: 10 })
+        // 热门帮助列表示例
+        Column({ space: 12 }) {
+          this.buildHelpItem('电脑维修', '专业电脑维修服务，快速上门')
+          this.buildHelpItem('学习辅导', '各科目学习辅导，一对一教学')
+          this.buildHelpItem('搬家服务', '专业搬家团队，安全可靠')
+          this.buildHelpItem('宠物寄养', '爱心宠物寄养，细心照料')
+        }
+        .width('100%')
       }
-      .height('90%')
       .width('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+      .padding(16)
+      .layoutWeight(1)
 
       // 底部导航栏
       Row({ space: 20 }) {
@@ -102,5 +141,36 @@ struct Index {
     .height('100%')
     .width('100%')
     .backgroundColor('#F5F5F5')
+  }
+
+  @Builder
+  private buildHelpItem(title: string, description: string) {
+    Row() {
+      Column({ space: 4 }) {
+        Text(title)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#333333')
+        
+        Text(description)
+          .fontSize(14)
+          .fontColor('#666666')
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+
+      Text('查看详情')
+        .fontSize(14)
+        .fontColor(Color.Blue)
+    }
+    .width('100%')
+    .height(60)
+    .padding({ left: 16, right: 16 })
+    .backgroundColor('#FFFFFF')
+    .borderRadius(8)
+    .onClick(() => {
+      // 点击帮助项也可以跳转到搜索页面
+      this.navigateToSearch();
+    })
   }
 }
