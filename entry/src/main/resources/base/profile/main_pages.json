@@ -5,6 +5,7 @@
     "pages/Publish",
     "pages/Chat",
     "pages/Myself",
-    "pages/LoginPage"
+    "pages/LoginPage",
+    "pages/RegisterPage"
   ]
 }

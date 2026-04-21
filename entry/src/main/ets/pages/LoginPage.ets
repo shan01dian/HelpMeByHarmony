@@ -48,10 +48,15 @@ struct LoginPage {
           AppStorage.setOrCreate('isLogin', true);
           router.back();
         })
-      Text('注册账号')
-        .fontColor('#007DFF')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
+      Text(){
+        Span('注册账号')
+          .fontColor('#007DFF')
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .onClick(() => {
+          router.pushUrl({ url: 'pages/RegisterPage' });
+        })
+      }
     }
   }
 }

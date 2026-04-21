@@ -1,9 +1,11 @@
 import router from '@ohos.router';
 
+
 @Entry
 @Component
 struct Index {
   @State message: string = 'Hello World';
+  @State currentTabIndex: number = 0;
   
   @Builder
   private buildIconButton(iconResource: Resource, index: number) {
@@ -11,6 +13,7 @@ struct Index {
       SymbolGlyph(iconResource)
         .fontSize(30)
         .margin({ right: 10 })
+        .fontColor([this.currentTabIndex === index ? Color.Blue : Color.Gray])
     }
     .onClick(() => {
       this.navigateToPage(index);
