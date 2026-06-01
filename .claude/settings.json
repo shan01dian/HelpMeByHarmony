@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(code --list-extensions)",
+      "Bash(mysql --version)",
+      "Bash(mongosh --version)",
+      "Bash(mongod --version)",
+      "Bash(npm --version)"
+    ]
+  }
+}
