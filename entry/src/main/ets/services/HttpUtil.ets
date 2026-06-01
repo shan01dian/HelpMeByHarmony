@@ -80,13 +80,23 @@ export async function httpPost<T>(path: string, body?: object): Promise<T> {
   })
 
   if (response.responseCode === 200) {
-    return JSON.parse(response.result as string) as T
+    try {
+      return JSON.parse(response.result as string) as T
+    } catch {
+      throw new Error(`服务器响应格式异常: ${response.result}`)
+    }
   } else if (response.responseCode === 401) {
     await clearToken()
     throw new Error('UNAUTHORIZED')
   } else {
-    const errBody = JSON.parse(response.result as string) as Record<string, string>
-    throw new Error(errBody['error'] || `HTTP ${response.responseCode}`)
+    let errMsg: string = `HTTP ${response.responseCode}`
+    try {
+      const errBody = JSON.parse(response.result as string) as Record<string, string>
+      errMsg = errBody['error'] || errMsg
+    } catch {
+      errMsg = `服务器错误(${response.responseCode})`
+    }
+    throw new Error(errMsg)
   }
 }
 
@@ -174,6 +184,47 @@ export async function httpDelete<T>(path: string): Promise<T> {
 
   if (response.responseCode === 200) {
     return JSON.parse(response.result as string) as T
+  } else {
+    const errBody = JSON.parse(response.result as string) as Record<string, string>
+    throw new Error(errBody['error'] || `HTTP ${response.responseCode}`)
+  }
+}
+
+/**
+ * 封装 multipart/form-data 文件上传
+ * @param path 接口路径
+ * @param fieldName 表单字段名
+ * @param filePath 本地文件路径
+ * @param fileName 文件名
+ */
+export async function httpUpload<T>(path: string, fieldName: string, filePath: string, fileName: string): Promise<T> {
+  const url = `${API_BASE}${path}`
+  const token = await getToken()
+  const header: Record<string, string> = {}
+  if (token) {
+    header['Authorization'] = `Bearer ${token}`
+  }
+
+  const response = await httpRequest.request(url, {
+    method: http.RequestMethod.POST,
+    header: header,
+    multiFormDataList: [
+      {
+        name: fieldName,
+        filePath: filePath,
+        remoteFileName: fileName,
+        contentType: 'application/octet-stream'
+      }
+    ],
+    readTimeout: 30000,
+    connectTimeout: 15000
+  })
+
+  if (response.responseCode === 200) {
+    return JSON.parse(response.result as string) as T
+  } else if (response.responseCode === 401) {
+    await clearToken()
+    throw new Error('UNAUTHORIZED')
   } else {
     const errBody = JSON.parse(response.result as string) as Record<string, string>
     throw new Error(errBody['error'] || `HTTP ${response.responseCode}`)

@@ -178,6 +178,30 @@ app.post('/send-code', async (req, res) => {
   }
 });
 
+// 验证验证码
+app.post('/verify-code', async (req, res) => {
+  try {
+    const { phone, code } = req.body;
+
+    if (!phone || !code) {
+      return res.status(400).json({ error: '参数不完整' });
+    }
+
+    // 开发环境验证固定验证码
+    if (process.env.NODE_ENV === 'development') {
+      const valid = code === (process.env.DEV_VERIFY_CODE || '1234');
+      return res.json({ registered: valid });
+    }
+
+    // 生产环境需要查数据库/Redis验证
+    // TODO: 实现生产环境的验证码验证逻辑
+    res.json({ registered: false });
+  } catch (error) {
+    console.error('验证验证码失败:', error);
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
 // 检查手机号是否已注册
 app.post('/check-phone', async (req, res) => {
   try {
@@ -239,7 +263,8 @@ app.post('/login', async (req, res) => {
 // 用户注册
 app.post('/register', async (req, res) => {
   try {
-    const { phone, code, userName, realName, idCardNumber, birthDate, location, avatar, introduction } = req.body;
+    const { phone, code, userName, realName, idCardNumber, birthDate, avatar, introduction } = req.body;
+    const location = req.body.location || '';
 
     // 开发环境验证固定验证码
     if (process.env.NODE_ENV === 'development') {

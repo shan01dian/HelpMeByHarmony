@@ -21,13 +21,18 @@ export interface RegisterRequest {
   realName: string
   idCardNumber: string
   birthDate: string
-  location: string
   avatar: string
   introduction?: string
 }
 
 // 布尔结果接口
 export interface BoolResult {
+  registered: boolean
+}
+
+// 验证码校验结果接口
+export interface VerifyCodeResult {
+  codeValid: boolean
   registered: boolean
 }
 
@@ -44,8 +49,8 @@ export async function sendCode(phone: string, captchaToken: string): Promise<voi
  */
 export async function verifyCode(phone: string, code: string): Promise<boolean> {
   const body: Record<string, string> = { 'phone': phone, 'code': code }
-  const res = await httpPost<BoolResult>('/verify-code', body)
-  return res.registered
+  const res = await httpPost<VerifyCodeResult>('/verify-code', body)
+  return res.codeValid
 }
 
 /**

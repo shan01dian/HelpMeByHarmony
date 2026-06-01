@@ -3,8 +3,22 @@
 const express = require("express");
 const pool = require("../help_me_db.js");
 const { signToken } = require("./auth.js");
+const { upload, withMulter } = require("./upload.js");
 
 const router = express.Router();
+
+// 注册头像上传（无需登录）
+router.post(
+  "/upload/register-avatar",
+  withMulter(upload.single("avatar")),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "未上传头像" });
+    }
+    const avatarPath = `/img/${req.file.filename}`;
+    return res.json({ success: true, path: avatarPath });
+  },
+);
 
 // 检查手机号是否已注册
 router.post("/check-phone", async (req, res) => {
@@ -43,16 +57,14 @@ router.post("/verify-code", async (req, res) => {
   if (!phone || !code) {
     return res.status(400).json({ error: "请填写手机号和验证码" });
   }
-  if (String(code) !== "1234") {
-    return res.status(401).json({ error: "验证码错误" });
-  }
+  const codeValid = String(code) === "1234";
   try {
     const [existing] = await pool.query(
       "SELECT UserId FROM Users WHERE PhoneNumber = ? LIMIT 1",
       [phone],
     );
     const exists = existing && existing.length > 0;
-    return res.json({ success: true, registered: exists });
+    return res.json({ success: true, codeValid, registered: exists });
   } catch (err) {
     console.error("DB query error (verify-code):", err);
     return res.status(500).json({ error: "验证失败" });
@@ -81,9 +93,7 @@ router.post(
       !code ||
       !userName ||
       !realName ||
-      !idCardNumber ||
-      !location ||
-      !birthDate
+      !idCardNumber
     ) {
       return res.status(400).json({ error: "请填写所有必填项" });
     }
@@ -127,8 +137,8 @@ router.post(
           userName,
           realName,
           idCardNumber,
-          location,
-          birthDate,
+          location || '',
+          birthDate || null,
           introduction || null,
           avatarPath,
         ],
