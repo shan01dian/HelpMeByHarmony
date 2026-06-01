@@ -3,7 +3,6 @@
 const express = require("express");
 const pool = require("../help_me_db.js");
 const { signToken } = require("./auth.js");
-const { upload, withMulter, cleanupUploadedFiles } = require("./upload.js");
 
 const router = express.Router();
 
@@ -22,17 +21,47 @@ router.post("/check-phone", async (req, res) => {
     );
 
     const exists = existing && existing.length > 0;
-    return res.json({ success: true, exists });
+    return res.json({ success: true, registered: exists });
   } catch (err) {
     console.error("DB query error (check-phone):", err);
     return res.status(500).json({ error: "查询失败" });
   }
 });
 
-// 注册：接收 { phone, code, userName, realName, location, birthDate, introduction } + 可选头像
+// 发送验证码（固定验证码为 1234，无需真实发送短信）
+router.post("/send-code", async (req, res) => {
+  const { phone } = req.body || {};
+  if (!phone) {
+    return res.status(400).json({ error: "手机号不能为空" });
+  }
+  return res.json({ success: true, message: "验证码已发送" });
+});
+
+// 校验验证码
+router.post("/verify-code", async (req, res) => {
+  const { phone, code } = req.body || {};
+  if (!phone || !code) {
+    return res.status(400).json({ error: "请填写手机号和验证码" });
+  }
+  if (String(code) !== "1234") {
+    return res.status(401).json({ error: "验证码错误" });
+  }
+  try {
+    const [existing] = await pool.query(
+      "SELECT UserId FROM Users WHERE PhoneNumber = ? LIMIT 1",
+      [phone],
+    );
+    const exists = existing && existing.length > 0;
+    return res.json({ success: true, registered: exists });
+  } catch (err) {
+    console.error("DB query error (verify-code):", err);
+    return res.status(500).json({ error: "验证失败" });
+  }
+});
+
+// 注册：接收 { phone, code, userName, realName, idCardNumber, location, birthDate, introduction, avatar }
 router.post(
   "/register",
-  withMulter(upload.single("avatar")),
   async (req, res) => {
     const {
       phone,
@@ -43,6 +72,7 @@ router.post(
       location,
       birthDate,
       introduction,
+      avatar,
     } = req.body || {};
 
     // 验证必填字段
@@ -71,8 +101,6 @@ router.post(
       );
 
       if (existing && existing.length > 0) {
-        // 清理已上传的文件
-        if (req.file) cleanupUploadedFiles([req.file]);
         return res.status(409).json({ error: "该手机号已注册" });
       }
 
@@ -83,14 +111,12 @@ router.post(
       );
 
       if (existingIdCard && existingIdCard.length > 0) {
-        // 清理已上传的文件
-        if (req.file) cleanupUploadedFiles([req.file]);
         return res.status(409).json({ error: "该身份证号已被注册" });
       }
 
-      // 处理头像路径（SQL中UserAvatar是NOT NULL，所以必须提供默认值）
-      const avatarPath = req.file
-        ? `/img/${req.file.filename}`
+      // 处理头像路径
+      const avatarPath = avatar && String(avatar).trim() !== ""
+        ? String(avatar).trim()
         : "/img/user.svg";
 
       // 插入新用户
@@ -128,8 +154,6 @@ router.post(
       return res.json({ success: true, user, token });
     } catch (err) {
       console.error("DB query error (register):", err);
-      // 注册失败时清理已上传的头像文件
-      if (req.file) cleanupUploadedFiles([req.file]);
 
       // 处理MySQL唯一约束冲突错误
       if (err.code === "ER_DUP_ENTRY") {

@@ -1,7 +1,7 @@
 // 应用配置管理器
 export class AppConfig {
   // 后端服务器地址配置
-  private static backendUrl: string = 'http://192.168.3.115:3000'
+  private static backendUrl: string = 'http://192.168.3.125:3000'
 
   // 获取后端服务器地址
   static getBackendUrl(): string {
